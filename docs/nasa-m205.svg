@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 410" role="img" aria-label="Mach 2.05 derived normalized MAE by station: SA compared with SST">
+<rect width="840" height="410" fill="#f8fafc"/>
+<text x="50" y="40" style="font:bold 22px system-ui;fill:#1e293b">Mach 2.05 duct · derived station MAE/U∞</text>
+<text x="50" y="67" style="font:14px system-ui;fill:#475569">SA vs SST, 10 exported stations; reconstructed from A09 per-station metrics</text>
+<path d="M50 90V330H795" stroke="#64748b" fill="none"/>
+<polyline points="80.00,287.67 152.00,292.56 224.00,280.78 296.00,221.58 368.00,289.10 440.00,281.31 512.00,133.57 584.00,228.83 656.00,290.44 728.00,304.85" fill="none" stroke="#155e75" stroke-width="3"/>
+<circle cx="80.00" cy="287.67" r="4" fill="#155e75"/>
+<circle cx="152.00" cy="292.56" r="4" fill="#155e75"/>
+<circle cx="224.00" cy="280.78" r="4" fill="#155e75"/>
+<circle cx="296.00" cy="221.58" r="4" fill="#155e75"/>
+<circle cx="368.00" cy="289.10" r="4" fill="#155e75"/>
+<circle cx="440.00" cy="281.31" r="4" fill="#155e75"/>
+<circle cx="512.00" cy="133.57" r="4" fill="#155e75"/>
+<circle cx="584.00" cy="228.83" r="4" fill="#155e75"/>
+<circle cx="656.00" cy="290.44" r="4" fill="#155e75"/>
+<circle cx="728.00" cy="304.85" r="4" fill="#155e75"/>
+<polyline points="80.00,288.43 152.00,294.17 224.00,283.33 296.00,241.00 368.00,296.70 440.00,282.76 512.00,133.76 584.00,248.68 656.00,279.79 728.00,307.29" fill="none" stroke="#d97706" stroke-width="3"/>
+<circle cx="80.00" cy="288.43" r="4" fill="#d97706"/>
+<circle cx="152.00" cy="294.17" r="4" fill="#d97706"/>
+<circle cx="224.00" cy="283.33" r="4" fill="#d97706"/>
+<circle cx="296.00" cy="241.00" r="4" fill="#d97706"/>
+<circle cx="368.00" cy="296.70" r="4" fill="#d97706"/>
+<circle cx="440.00" cy="282.76" r="4" fill="#d97706"/>
+<circle cx="512.00" cy="133.76" r="4" fill="#d97706"/>
+<circle cx="584.00" cy="248.68" r="4" fill="#d97706"/>
+<circle cx="656.00" cy="279.79" r="4" fill="#d97706"/>
+<circle cx="728.00" cy="307.29" r="4" fill="#d97706"/>
+<text x="69" y="351" style="font:12px system-ui;fill:#475569">-30</text>
+<text x="141" y="351" style="font:12px system-ui;fill:#475569">-20</text>
+<text x="213" y="351" style="font:12px system-ui;fill:#475569">-10</text>
+<text x="285" y="351" style="font:12px system-ui;fill:#475569">0</text>
+<text x="357" y="351" style="font:12px system-ui;fill:#475569">10</text>
+<text x="429" y="351" style="font:12px system-ui;fill:#475569">20</text>
+<text x="501" y="351" style="font:12px system-ui;fill:#475569">30</text>
+<text x="573" y="351" style="font:12px system-ui;fill:#475569">40</text>
+<text x="645" y="351" style="font:12px system-ui;fill:#475569">50</text>
+<text x="717" y="351" style="font:12px system-ui;fill:#475569">60</text>
+<text x="355" y="383" style="font:14px system-ui;fill:#475569">Station x (mm)</text>
+<text x="620" y="95" style="font:14px system-ui;fill:#155e75">● SA</text>
+<text x="680" y="95" style="font:14px system-ui;fill:#d97706">● SST</text>
+</svg>

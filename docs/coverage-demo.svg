@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 420" role="img" aria-labelledby="title desc">
+<title id="title">Truncated CFD profile yields zero clamped RMSE but incomplete coverage</title>
+<desc id="desc">Naive endpoint clamping on the left hides eight unsupported reference samples. Strict coverage audit on the right shades the missing region.</desc>
+<rect width="1040" height="420" fill="#f8fafc"/>
+<style>text{font:16px system-ui,sans-serif;fill:#1e293b}.muted{fill:#52637b;font-size:13px}.label{font-weight:700;font-size:19px}.ref{fill:none;stroke:#155e75;stroke-width:3}.calc{fill:none;stroke:#d97706;stroke-width:3}.pt{fill:#155e75}</style>
+<text x="30" y="45" class="label">Naive endpoint clamp</text>
+<text x="30" y="75">RMSE = 0 (misleading)</text>
+<path d="M30 100V340H460" fill="none" stroke="#94a3b8"/>
+<polyline class="ref" points="30.0,340.0 51.5,320.0 73.0,300.0 94.5,280.0 116.0,260.0 137.5,240.0 159.0,220.0 180.5,200.0 202.0,180.0 223.5,160.0 245.0,140.0 266.5,120.0 288.0,100.0 309.5,100.0 331.0,100.0 352.5,100.0 374.0,100.0 395.5,100.0 417.0,100.0 438.5,100.0 460.0,100.0"/>
+<polyline class="calc" points="30.0,340.0 51.5,320.0 73.0,300.0 94.5,280.0 116.0,260.0 137.5,240.0 159.0,220.0 180.5,200.0 202.0,180.0 223.5,160.0 245.0,140.0 266.5,120.0 288.0,100.0 309.5,100.0 331.0,100.0 352.5,100.0 374.0,100.0 395.5,100.0 417.0,100.0 438.5,100.0 460.0,100.0"/>
+<circle class="pt" cx="30.00" cy="340.00" r="3"/>
+<circle class="pt" cx="51.50" cy="320.00" r="3"/>
+<circle class="pt" cx="73.00" cy="300.00" r="3"/>
+<circle class="pt" cx="94.50" cy="280.00" r="3"/>
+<circle class="pt" cx="116.00" cy="260.00" r="3"/>
+<circle class="pt" cx="137.50" cy="240.00" r="3"/>
+<circle class="pt" cx="159.00" cy="220.00" r="3"/>
+<circle class="pt" cx="180.50" cy="200.00" r="3"/>
+<circle class="pt" cx="202.00" cy="180.00" r="3"/>
+<circle class="pt" cx="223.50" cy="160.00" r="3"/>
+<circle class="pt" cx="245.00" cy="140.00" r="3"/>
+<circle class="pt" cx="266.50" cy="120.00" r="3"/>
+<circle class="pt" cx="288.00" cy="100.00" r="3"/>
+<circle class="pt" cx="309.50" cy="100.00" r="3"/>
+<circle class="pt" cx="331.00" cy="100.00" r="3"/>
+<circle class="pt" cx="352.50" cy="100.00" r="3"/>
+<circle class="pt" cx="374.00" cy="100.00" r="3"/>
+<circle class="pt" cx="395.50" cy="100.00" r="3"/>
+<circle class="pt" cx="417.00" cy="100.00" r="3"/>
+<circle class="pt" cx="438.50" cy="100.00" r="3"/>
+<circle class="pt" cx="460.00" cy="100.00" r="3"/>
+<text x="30" y="375" class="muted">Reference samples: teal · computed: amber</text>
+<text x="550" y="45" class="label">Coverage-aware audit</text>
+<text x="550" y="75">13/21 supported · full-domain FAIL</text>
+<path d="M550 100V340H980" fill="none" stroke="#94a3b8"/>
+<rect x="808.00" y="100" width="172.00" height="240" fill="#fed7aa" opacity="0.75"/>
+<text x="816.0" y="125" class="muted">no support</text>
+<polyline class="ref" points="550.0,340.0 571.5,320.0 593.0,300.0 614.5,280.0 636.0,260.0 657.5,240.0 679.0,220.0 700.5,200.0 722.0,180.0 743.5,160.0 765.0,140.0 786.5,120.0 808.0,100.0 829.5,100.0 851.0,100.0 872.5,100.0 894.0,100.0 915.5,100.0 937.0,100.0 958.5,100.0 980.0,100.0"/>
+<polyline class="calc" points="550.0,340.0 571.5,320.0 593.0,300.0 614.5,280.0 636.0,260.0 657.5,240.0 679.0,220.0 700.5,200.0 722.0,180.0 743.5,160.0 765.0,140.0 786.5,120.0 808.0,100.0"/>
+<circle class="pt" cx="550.00" cy="340.00" r="3"/>
+<circle class="pt" cx="571.50" cy="320.00" r="3"/>
+<circle class="pt" cx="593.00" cy="300.00" r="3"/>
+<circle class="pt" cx="614.50" cy="280.00" r="3"/>
+<circle class="pt" cx="636.00" cy="260.00" r="3"/>
+<circle class="pt" cx="657.50" cy="240.00" r="3"/>
+<circle class="pt" cx="679.00" cy="220.00" r="3"/>
+<circle class="pt" cx="700.50" cy="200.00" r="3"/>
+<circle class="pt" cx="722.00" cy="180.00" r="3"/>
+<circle class="pt" cx="743.50" cy="160.00" r="3"/>
+<circle class="pt" cx="765.00" cy="140.00" r="3"/>
+<circle class="pt" cx="786.50" cy="120.00" r="3"/>
+<circle class="pt" cx="808.00" cy="100.00" r="3"/>
+<circle class="pt" cx="829.50" cy="100.00" r="3"/>
+<circle class="pt" cx="851.00" cy="100.00" r="3"/>
+<circle class="pt" cx="872.50" cy="100.00" r="3"/>
+<circle class="pt" cx="894.00" cy="100.00" r="3"/>
+<circle class="pt" cx="915.50" cy="100.00" r="3"/>
+<circle class="pt" cx="937.00" cy="100.00" r="3"/>
+<circle class="pt" cx="958.50" cy="100.00" r="3"/>
+<circle class="pt" cx="980.00" cy="100.00" r="3"/>
+<text x="550" y="375" class="muted">Reference samples: teal · computed: amber</text>
+</svg>

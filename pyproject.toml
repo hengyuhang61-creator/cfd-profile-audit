@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cfd-profile-audit"
+version = "0.1.0rc1"
+description = "Coverage-aware validation of one-dimensional CFD profiles"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{name = "Heng Yuhang"}]
+keywords = ["CFD", "validation", "coverage", "SWBLI", "reproducibility"]
+classifiers = ["Programming Language :: Python :: 3", "Operating System :: OS Independent", "Topic :: Scientific/Engineering"]
+dependencies = []
+
+[project.scripts]
+cfd-profile-audit = "cfd_profile_audit.cli:main"
+
+[project.urls]
+Repository = "https://github.com/hengyuhang61-creator/cfd-profile-audit"
+Issues = "https://github.com/hengyuhang61-creator/cfd-profile-audit/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+cfd_profile_audit = ["data/*.csv"]

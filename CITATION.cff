@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "Cite the exact Git commit and the underlying scientific data sources when using this tool."
+title: "cfd-profile-audit: coverage-aware CFD profile validation"
+authors:
+  - family-names: Heng
+    given-names: Yuhang
+version: 0.1.0rc1
+repository-code: https://github.com/hengyuhang61-creator/cfd-profile-audit
+license: MIT

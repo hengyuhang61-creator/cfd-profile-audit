@@ -1,0 +1,29 @@
+{
+  "naive_clamped_rmse": 0.0,
+  "reference_samples": 21,
+  "computed_samples": 13,
+  "supported_reference_samples": 13,
+  "sample_coverage": 0.6190476190476191,
+  "reference_domain": [
+    0.0,
+    20.0
+  ],
+  "computed_domain": [
+    0.0,
+    12.0
+  ],
+  "domain_intersection": [
+    0.0,
+    12.0
+  ],
+  "interval_length_coverage": 0.6,
+  "overlap_mae": 0.0,
+  "overlap_rmse": 0.0,
+  "full_domain_eligible": false,
+  "mode": "strict",
+  "verdict": "FAIL_INCOMPLETE_SUPPORT",
+  "warnings": [
+    "Incomplete support: reported errors are conditional on supported reference samples, not full-domain errors.",
+    "Gap quality not checked: convex-hull interpolation may bridge sparse computed samples; use --max-gap."
+  ]
+}

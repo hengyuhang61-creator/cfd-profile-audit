@@ -1,0 +1,62 @@
+{
+  "case": "Mach 2.05 duct, SU2/PIV",
+  "provenance": "A09_derived_station_metrics",
+  "station_count": 10,
+  "six_station": {
+    "SA": {
+      "matched_samples": 202,
+      "pooled_mae_over_uinf": 0.10726334853896038,
+      "equal_station_mae_over_uinf": 0.115000009605
+    },
+    "SST": {
+      "matched_samples": 202,
+      "pooled_mae_over_uinf": 0.10161451591138615,
+      "equal_station_mae_over_uinf": 0.11021134564333335
+    }
+  },
+  "all_stations": {
+    "SA": {
+      "matched_samples": 348,
+      "pooled_mae_over_uinf": 0.09395244279379311,
+      "equal_station_mae_over_uinf": 0.099740715196
+    },
+    "SST": {
+      "matched_samples": 348,
+      "pooled_mae_over_uinf": 0.08743625622735632,
+      "equal_station_mae_over_uinf": 0.09319958279400001
+    }
+  },
+  "source_commit": "2b2be8c4e982af6e97542237aeaaf9da615707bd",
+  "u_inf_m_s": 532.0,
+  "limits": [
+    "Exported velocity tables are not a native SU2 solver rerun.",
+    "PIV wall-normal resolution does not establish a measured separation length."
+  ],
+  "definition_flips": null,
+  "per_station_mae": {
+    "SA": {
+      "-30.0": 0.06124363174,
+      "-20.0": 0.0541793425,
+      "-10.0": 0.07122401446,
+      "0.0": 0.1568787539,
+      "10.0": 0.0591855262,
+      "20.0": 0.07044826506,
+      "30.0": 0.2842281771,
+      "40.0": 0.1463840986,
+      "50.0": 0.05723995423,
+      "60.0": 0.03639538817
+    },
+    "SST": {
+      "-30.0": 0.0601552513,
+      "-20.0": 0.05185055002,
+      "-10.0": 0.06753265947,
+      "0.0": 0.128777523,
+      "10.0": 0.04819135972,
+      "20.0": 0.06835266949,
+      "30.0": 0.2839601628,
+      "40.0": 0.1176707362,
+      "50.0": 0.07265111757,
+      "60.0": 0.03285379837
+    }
+  }
+}

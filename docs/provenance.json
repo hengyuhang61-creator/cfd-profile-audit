@@ -1,0 +1,27 @@
+{
+  "audit_date": "2026-11-22",
+  "source_mode": "existing_public_A10_code_and_user_local_A09_A08_analysis",
+  "mach205": {
+    "case": "Mach 2.05 3 mm ramp duct, PIV and SU2 SA/SST exports",
+    "upstream_repository": "https://github.com/ofirnirr/SU2-SWBLI-Mach-2-RANS-Validation",
+    "commit": "2b2be8c4e982af6e97542237aeaaf9da615707bd",
+    "dataset_files_and_sha256": {
+      "m205_3mm_z21_piv_profiles.csv": "3c4f862b2c036a2cb4c02cc01a389b6827f1a49134234288a50b6e29732a81f8",
+      "SA_M205_3mm_medium_su2_profiles_z21.csv": "98d7f514f944c9f5f2d511460533d0b593f3e14a88461d570209abc134deb380",
+      "SST_M205_3mm_medium_su2_profiles_z21.csv": "5b3a4fb6a683bd5a4ee09c2e6ef0a5360a8c2f919f5f888e85ccee35fac69916"
+    },
+    "local_analysis_provenance": "A09_EXTERNAL_DISCOVERY_20261120/out/A09_M205_profile_metrics.csv",
+    "local_analysis_sha256": "b1b9d76bd35a85675da33d89448cf7fd83513c8abfcde28b2fa1fb23b978ee85",
+    "available_in_candidate": "derived station MAE table; upstream CSVs fetched and checked at runtime but not bundled",
+    "validation_limit": "no original SU2 solver rerun; possible mesh provenance mismatch"
+  },
+  "mach25": {
+    "case": "Mach 2.5 16 degree axisymmetric cone NASA TMR, SA/SST-Vm",
+    "source_repository": "https://github.com/hengyuhang61-creator/aero-propulsion-system-id",
+    "commit": "b436ba1581cc39ffc7611118cf90cafc20d2011e",
+    "derived_votes_source": "research/swbli-validation-audit/cone-window-votes.csv",
+    "derived_votes_sha256": "07cf55352caa68642f82b732e477d92cd37a3ae40c369241fb41623a63e6caea",
+    "data_limit": "derived-data reproduction only; native solver/PIV files not bundled"
+  },
+  "license": "MIT original code and derived reductions only; original upstream files retain their own rights"
+}
