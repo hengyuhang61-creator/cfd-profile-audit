@@ -7,7 +7,8 @@ from .core import ProfileError
 
 IDENTITY = ("case", "station", "coordinate", "field", "coordinate_unit", "field_unit",
             "normalization", "averaging", "conditions")
-LENGTH_IN_METRES = {"km": 1000.0, "m": 1.0, "cm": 0.01, "mm": 0.001, "um": 1e-6}
+LENGTH_POWER = {"km": 3, "m": 0, "cm": -2, "mm": -3, "um": -6}
+LENGTH_IN_METRES = {unit: 10.0 ** power for unit, power in LENGTH_POWER.items()}
 
 
 def _labels(document, name, allowed):
@@ -52,6 +53,15 @@ def read_preflight(path, *, ref_units, computed_units, coordinate_scale):
         checks[key] = {"status": status, "reference": ref, "computed": comp}
     checks["coordinate_unit"]["computed_scale"] = coordinate_scale
 
+    statuses = {check["status"] for check in checks.values()}
+    status = "FAIL" if "FAIL" in statuses else ("UNKNOWN" if "UNKNOWN" in statuses else "PASS")
+    science = validation_evidence(document)
+    return {"status": status, "checks": checks, "reference_kind": science["reference_kind"],
+            "validation_evidence": science["evidence"],
+            "scope": "declared identity and configured sampling checks; scientific validation not assessed"}
+
+
+def validation_evidence(document):
     reference_kind = document.get("reference_kind")
     if reference_kind not in (None, "experiment", "analytic", "simulation"):
         raise ProfileError("preflight reference_kind must be experiment, analytic or simulation")
@@ -61,7 +71,4 @@ def read_preflight(path, *, ref_units, computed_units, coordinate_scale):
     if reference_kind in ("analytic", "simulation"):
         evidence["experiment_uncertainty"]["status"] = "NOT_APPLICABLE"
 
-    statuses = {check["status"] for check in checks.values()}
-    status = "FAIL" if "FAIL" in statuses else ("UNKNOWN" if "UNKNOWN" in statuses else "PASS")
-    return {"status": status, "checks": checks, "reference_kind": reference_kind,
-            "validation_evidence": evidence}
+    return {"status": "NOT_ASSESSED", "reference_kind": reference_kind, "evidence": evidence}

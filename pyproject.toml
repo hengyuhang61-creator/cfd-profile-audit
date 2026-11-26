@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cfd-profile-audit"
-version = "0.1.0rc2"
+version = "0.1.0rc3"
 description = "Coverage-aware validation of one-dimensional CFD profiles"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -4,6 +4,6 @@ title: "cfd-profile-audit: coverage-aware CFD profile validation"
 authors:
   - family-names: Heng
     given-names: Yuhang
-version: 0.1.0rc1
+version: 0.1.0rc3
 repository-code: https://github.com/hengyuhang61-creator/cfd-profile-audit
 license: MIT

@@ -89,4 +89,45 @@ class CLITests(unittest.TestCase):
             checks = json.loads(converted.stdout)['preflight']['checks']
             self.assertEqual(checks['interpolation_gap']['status'], 'NOT_APPLICABLE')
 
+    def test_audit_checks_zone_positions_and_explicit_units_before_scoring(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            ref, comp, labels = (root / name for name in ('ref.dat', 'comp.csv', 'labels.json'))
+            ref.write_text('VARIABLES="y [m]","u [m/s]"\nZONE T="x=10 [mm]", I=2, F=POINT\n0 0\n1.001 1\n')
+            comp.write_text('y [mm],u [m/s]\n0,0\n1001,1\n')
+            frame = dict(axis='x', origin='leading edge', direction='downstream')
+            reference = dict(case='a', station=dict(frame, value='10', unit='mm'), coordinate='y from wall',
+                             field='streamwise velocity', normalization='dimensional', averaging='Favre',
+                             conditions='configuration A')
+            computed = dict(reference, station=dict(frame, value='0.01', unit='m'))
+            args = ('audit', str(ref), str(comp), '--coordinate', 'y [m]', '--computed-coordinate', 'y [mm]',
+                    '--field', 'u [m/s]', '--declarations', str(labels), '--json')
+            for definitions, expected, exit_code in (
+                (computed, 'ELIGIBLE_DESCRIPTIVE', 0),
+                (dict(computed, station=dict(frame, value='0.01', unit='m', origin='inlet')),
+                 'INELIGIBLE_IDENTITY', 1),
+                (dict(computed, averaging='Reynolds'), 'INELIGIBLE_IDENTITY', 1),
+                (dict(computed, normalization=None), 'UNKNOWN_IDENTITY', 2),
+                (dict(computed, coordinate_unit='m'), 'INELIGIBLE_IDENTITY', 1),
+            ):
+                with self.subTest(definitions=definitions):
+                    labels.write_text(json.dumps({'reference': reference, 'computed': definitions}))
+                    process = self.run_cli(*args)
+                    self.assertEqual(process.returncode, exit_code, process.stderr)
+                    report = json.loads(process.stdout)
+                    self.assertEqual(report['comparison_eligibility'], expected)
+                    self.assertEqual(report['scientific_validation']['status'], 'NOT_ASSESSED')
+                    self.assertEqual(report['error_metrics'], None if exit_code else
+                                     {'overlap_mae': 0.0, 'overlap_rmse': 0.0})
+                    if exit_code == 0:
+                        self.assertEqual(report['numeric_support']['interpolation_gap'], 'NOT_APPLICABLE')
+            ref.write_text(ref.read_text().replace('x=10 [mm]', 'x=20 [mm]'))
+            labels.write_text(json.dumps({'reference': reference, 'computed': computed}))
+            process = self.run_cli(*args)
+            self.assertEqual(process.returncode, 1, process.stderr)
+            report = json.loads(process.stdout)
+            self.assertEqual(report['declaration_consistency']['checks']['station'], 'CONFLICT')
+            self.assertEqual(report['numeric_support']['supported_reference_samples'], 2)
+            self.assertIsNone(report['error_metrics'])
+
 if __name__=='__main__':unittest.main()

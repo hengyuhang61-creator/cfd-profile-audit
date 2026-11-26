@@ -25,7 +25,37 @@ overlap-only MAE=0, RMSE=0; full_domain_eligible=False
 
 The demonstration intentionally exposes a *failed* full-domain comparison; exit status `0` means the demonstration executed, **not** that the CFD profile passed validation. The core demo and CSV engine use Python 3.10+ standard library only; nothing is downloaded.
 
-## Use your own CSVs
+## Audit your own files
+
+Install the wheel from the [latest pre-release](https://github.com/hengyuhang61-creator/cfd-profile-audit/releases/tag/v0.1.0rc3), then run the local audit with two CSVs or two Tecplot point tables. Quoted column names select literal headers. A table with several named zones needs an explicit zone selection.
+
+```sh
+python -m pip install cfd_profile_audit-0.1.0rc3-py3-none-any.whl
+cfd-profile-audit audit reference.csv computed.csv --coordinate "y [mm]" --field "U [m/s]" --output audit.json
+```
+
+The first call needs only the two files and column names. It reports numerical support, source units, unresolved identity and interpolation evidence. Use `--template declarations.json` to generate the fields to review, then pass it with `--declarations declarations.json`. The audit reads UTF-8 CSV and one-dimensional ASCII Tecplot POINT tables with one-line quoted `VARIABLES` and named `ZONE T="..."` records. Your files are processed locally. Output paths must be new files.
+
+Try an archived NASA TMR two-code flat-plate table. It has zone titles but no explicit units in the column labels, so the report gives support counts and leaves the error metrics empty until identity is supplied. [TMR case](https://tmbwg.github.io/turbmodels/flatplate_sa.html)
+
+```sh
+curl -fL -o cf_plate.dat https://raw.githubusercontent.com/TMBWG/turbmodels/20a39f549dbff988a6accc421ac84dafc4487695/FlatPlate/SA/cf_plate.dat
+cfd-profile-audit audit cf_plate.dat cf_plate.dat --coordinate x --field cf --reference-zone CFL3D --computed-zone FUN3D --json
+```
+
+For a complete, synthetic round trip with exact samples, use the repository's examples:
+
+```sh
+cfd-profile-audit audit examples/reference.csv examples/reference.csv --declarations examples/preflight.json --json
+```
+
+Each field in the JSON report records its input file SHA-256, source location, raw value and extraction rule when available. A recognized bracketed unit is explicit file evidence. A unit-like suffix such as `y_mm` is a candidate and leaves the unit unresolved. A declaration that conflicts with a recognized header unit suppresses scores. The report's `sources` citations can be supplied as a sidecar object keyed by `reference` or `computed`, then by identity field. The tool records these citations for review.
+
+Declare the coordinate frame (origin and positive direction), quantity/component, reference scale, averaging and nominal conditions for each side using its own evidence. For a zone titled as an axis position, supply a structured station such as `{"axis":"x","origin":"plate leading edge","direction":"downstream","value":"10","unit":"mm"}`. A title without a unit requires the documented native station unit and printed value. Confirmed stations such as 10 mm and 0.01 m match when their frames agree. Supported coordinate lengths are converted from their decimal text before float sampling. Different field units need offline conversion with recorded provenance. Case, averaging and other semantic labels are compared as declared. Solver settings, documentation and normalization values still need source review.
+
+Specify `--max-gap` in reference coordinate units if interior interpolation is needed. Exit 0 means `ELIGIBLE_DESCRIPTIVE` under the recorded definitions and full support. Exit 1 indicates a conflict or failed support and exit 2 indicates unresolved evidence or invalid input. Scientific validation remains unassessed. The [legacy CSV comparison](#legacy-csv-entry) remains available.
+
+## Legacy CSV entry
 
 `reference.csv` and `computed.csv` should have headers, for example:
 
@@ -84,4 +114,4 @@ CSV column flags select the actual columns. Unit labels may live in the JSON, or
 
 Optional `reference_kind` is `experiment`, `analytic` or `simulation`. The optional `evidence` object accepts citations under `iteration`, `grid` and `experiment_uncertainty`. Adequacy remains `UNKNOWN` pending review of the sources. Experimental uncertainty is `NOT_APPLICABLE` for analytic and simulation references. The checks establish consistency of declarations and one-dimensional sampling. Physical equivalence, input accuracy, outlier interpretation and uncertainty budgets require domain evidence.
 
-Version: **0.1.0rc2** (release candidate; no PyPI publication). [MIT license](LICENSE) applies to this project's original assets; [third-party notices](THIRD_PARTY_NOTICES.md) apply to upstream data. Run tests with `python -m unittest discover -s tests -v` and see the [Windows/Linux CI workflow](.github/workflows/ci.yml). [GitHub Actions runs](https://github.com/hengyuhang61-creator/cfd-profile-audit/actions). [Contribute](CONTRIBUTING.md) by opening a reproducible [issue](https://github.com/hengyuhang61-creator/cfd-profile-audit/issues) or a focused PR.
+Version **0.1.0rc3** is distributed on GitHub Releases. [MIT license](LICENSE) applies to this project's original assets; [third-party notices](THIRD_PARTY_NOTICES.md) apply to upstream data. Run tests with `python -m unittest discover -s tests -v` and see the [Windows/Linux CI workflow](.github/workflows/ci.yml). [GitHub Actions runs](https://github.com/hengyuhang61-creator/cfd-profile-audit/actions). [Contribute](CONTRIBUTING.md) by opening a reproducible [issue](https://github.com/hengyuhang61-creator/cfd-profile-audit/issues) or a focused PR.

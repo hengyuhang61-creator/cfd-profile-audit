@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 from . import __version__
 from .core import Profile, ProfileError, audit, clamped_sample, load_csv, scaled, validate_units
+from .intake import audit_inputs, read_table
 from .nasa import run_nasa
 from .plotting import coverage_svg
 from .preflight import read_preflight
@@ -28,7 +29,7 @@ def write_demo_csvs(directory: str | Path) -> None:
 
 
 def parser() -> argparse.ArgumentParser:
-    p=argparse.ArgumentParser(prog='cfd-profile-audit',description='Audit the actual support of 1D CFD velocity error scores.')
+    p=argparse.ArgumentParser(prog='cfd-profile-audit',description='Audit the support and identity of 1D CFD profiles.')
     p.add_argument('--version',action='version',version=f'cfd-profile-audit {__version__}')
     sub=p.add_subparsers(dest='command',required=True)
     d=sub.add_parser('demo',help='offline 21-reference/13-supported counterexample')
@@ -50,6 +51,21 @@ def parser() -> argparse.ArgumentParser:
     c.add_argument('--sort',action='store_true',help='explicitly sort unordered coordinate rows; duplicates remain invalid')
     c.add_argument('--json',action='store_true',help='machine-readable result only')
     c.add_argument('--output',help='write JSON to file in addition to stdout')
+    a = sub.add_parser('audit', help='inspect two CSV or 1-D Tecplot point tables with source evidence')
+    a.add_argument('reference')
+    a.add_argument('computed')
+    a.add_argument('--coordinate', default='y')
+    a.add_argument('--field', default='u')
+    a.add_argument('--computed-coordinate', help='computed column if different from --coordinate')
+    a.add_argument('--computed-field', help='computed column if different from --field')
+    a.add_argument('--reference-zone', help='exact Tecplot zone title for the reference')
+    a.add_argument('--computed-zone', help='exact Tecplot zone title for the computed profile')
+    a.add_argument('--declarations', metavar='JSON', help='confirmed identity definitions for each side')
+    a.add_argument('--max-gap', type=float, metavar='LENGTH', help='largest allowed interpolation gap in reference units')
+    a.add_argument('--sort', action='store_true', help='explicitly sort rows; duplicate coordinates remain invalid')
+    a.add_argument('--template', metavar='NEW_JSON', help='save unresolved identity fields to fill in')
+    a.add_argument('--json', action='store_true', help='machine-readable report only')
+    a.add_argument('--output', metavar='NEW_JSON', help='save the audit report without overwriting an existing file')
     n=sub.add_parser('nasa',help='bounded NASA Mach 2.05 / Mach 2.5 teaching reproductions')
     n.add_argument('--case',choices=('duct','cone'),required=True)
     n.add_argument('--source',choices=('derived','upstream'),default='derived')
@@ -61,7 +77,7 @@ def parser() -> argparse.ArgumentParser:
 
 def pretty(result: dict) -> None:
     if preflight := result.get('preflight'):
-        print(f"comparison preflight={preflight['status']}")
+        print(f"declared comparison preflight={preflight['status']} | scientific validation not assessed")
         for name, check in preflight['checks'].items():
             if check['status'] in ('FAIL', 'UNKNOWN'):
                 print(f"  {name}: {check['status']}")
@@ -76,9 +92,54 @@ def pretty(result: dict) -> None:
         print('WARNING:',warning,file=sys.stderr)
 
 
+def run_intake(args):
+    reference = read_table(args.reference, args.coordinate, args.field, args.reference_zone)
+    computed = read_table(args.computed, args.computed_coordinate or args.coordinate,
+                          args.computed_field or args.field, args.computed_zone)
+    report = audit_inputs(reference, computed, declarations=args.declarations,
+                          max_gap=args.max_gap, sort=args.sort)
+    data = json.dumps(report, indent=2, allow_nan=False)
+    if args.output:
+        with Path(args.output).open('x', encoding='utf-8') as handle:
+            handle.write(data + '\n')
+    if args.template:
+        template = {
+            side: {name: item['raw_value'] if item['status'] == 'USER_DECLARED' else None
+                   for name, item in details['identity'].items() if item['status'] != 'EXPLICIT_SOURCE'}
+            for side, details in report['inputs'].items()
+        }
+        with Path(args.template).open('x', encoding='utf-8') as handle:
+            json.dump(template, handle, indent=2)
+            handle.write('\n')
+    eligibility = report['comparison_eligibility']
+    if args.json:
+        print(data)
+    else:
+        print(f"{eligibility} | scientific validation not assessed")
+        for side, details in report['inputs'].items():
+            fields = details['identity']
+            explicit = [f"{k}={v['value']}" for k, v in fields.items() if v['status'] == 'EXPLICIT_SOURCE']
+            missing = [k for k, v in fields.items() if v['status'] in ('MISSING', 'CANDIDATE', 'UNRESOLVED', 'CONFLICT')]
+            print(f"  {side} source units: {', '.join(explicit) or 'none'}")
+            if missing:
+                print(f"  {side} fields to resolve: {', '.join(missing)}")
+        checks = report['declaration_consistency']['checks']
+        mismatches = [name for name, status in checks.items() if status in ('MISMATCH', 'CONFLICT')]
+        if mismatches:
+            print(f"  conflicting definitions: {', '.join(mismatches)}")
+        support = report['numeric_support']
+        print(f"  numeric support: {support['supported_reference_samples']}/{support['reference_samples']}"
+              f" | interpolation gap={support['interpolation_gap']}")
+        if metrics := report['error_metrics']:
+            print(f"  descriptive MAE={metrics['overlap_mae']:.6g} | RMSE={metrics['overlap_rmse']:.6g}")
+    return 0 if eligibility.startswith('ELIGIBLE') else 1 if eligibility.startswith('INELIGIBLE') else 2
+
+
 def main(argv: list[str] | None = None) -> int:
     args=parser().parse_args(argv)
     try:
+        if args.command == 'audit':
+            return run_intake(args)
         if args.command=='demo':
             ref,comp=demo_profiles()
             result=audit(ref,comp)
@@ -173,11 +234,11 @@ def main(argv: list[str] | None = None) -> int:
                 print('PROVENANCE:',result['provenance'],'vote_count:',result['vote_count'],'groups:',result['station_solver_groups'])
                 print('by width:',{k:round(v,3) if v is not None else None for k,v in result['mean_modal_agreement_by_width'].items()})
             return 0
-    except (OSError,ProfileError,ValueError) as exc:
+    except (OSError, ProfileError, ValueError, csv.Error, ArithmeticError) as exc:
         print(f'ERROR: {exc}',file=sys.stderr)
         return 2
     except Exception as exc:
         # Transport errors should be actionable but must not be mistaken for scientific failure.
-        print(f'ERROR: NASA download/reproduction failed: {type(exc).__name__}: {exc}',file=sys.stderr)
+        print(f'ERROR: {type(exc).__name__}: {exc}',file=sys.stderr)
         return 2
     return 2
