@@ -6,9 +6,11 @@ import json
 import math
 from pathlib import Path
 import sys
+from . import __version__
 from .core import Profile, ProfileError, audit, clamped_sample, load_csv, scaled, validate_units
 from .nasa import run_nasa
 from .plotting import coverage_svg
+from .preflight import read_preflight
 
 
 def demo_profiles() -> tuple[Profile,Profile]:
@@ -27,7 +29,7 @@ def write_demo_csvs(directory: str | Path) -> None:
 
 def parser() -> argparse.ArgumentParser:
     p=argparse.ArgumentParser(prog='cfd-profile-audit',description='Audit the actual support of 1D CFD velocity error scores.')
-    p.add_argument('--version',action='version',version='cfd-profile-audit 0.1.0rc1')
+    p.add_argument('--version',action='version',version=f'cfd-profile-audit {__version__}')
     sub=p.add_subparsers(dest='command',required=True)
     d=sub.add_parser('demo',help='offline 21-reference/13-supported counterexample')
     d.add_argument('--plot',metavar='SVG',help='write reproducible coverage SVG')
@@ -44,6 +46,7 @@ def parser() -> argparse.ArgumentParser:
     c.add_argument('--ref-coordinate-unit');c.add_argument('--computed-coordinate-unit')
     c.add_argument('--ref-field-unit');c.add_argument('--computed-field-unit')
     c.add_argument('--computed-coordinate-scale',type=float,help='multiply computed coordinates to express in reference coordinate units')
+    c.add_argument('--preflight',metavar='JSON',help='check declared case, station, units and field definitions before scoring')
     c.add_argument('--sort',action='store_true',help='explicitly sort unordered coordinate rows; duplicates remain invalid')
     c.add_argument('--json',action='store_true',help='machine-readable result only')
     c.add_argument('--output',help='write JSON to file in addition to stdout')
@@ -57,6 +60,13 @@ def parser() -> argparse.ArgumentParser:
 
 
 def pretty(result: dict) -> None:
+    if preflight := result.get('preflight'):
+        print(f"comparison preflight={preflight['status']}")
+        for name, check in preflight['checks'].items():
+            if check['status'] in ('FAIL', 'UNKNOWN'):
+                print(f"  {name}: {check['status']}")
+    if 'supported_reference_samples' not in result:
+        return
     print(f"verdict={result['verdict']} | reference={result['reference_samples']} supported={result['supported_reference_samples']} ({100*result['sample_coverage']:.1f}%)")
     if result['overlap_rmse'] is None:
         print('overlap MAE/RMSE: N/A (no matched reference samples)')
@@ -82,21 +92,67 @@ def main(argv: list[str] | None = None) -> int:
                 pretty(out)
             return 0  # demonstration intentionally shows a rejected comparison
         if args.command=='compare':
-            validate_units(args.ref_coordinate_unit,args.computed_coordinate_unit,args.computed_coordinate_scale,kind='coordinate')
-            validate_units(args.ref_field_unit,args.computed_field_unit,None,kind='field')
-            if args.ref_field_unit is not None and args.ref_field_unit != args.computed_field_unit:
-                raise ProfileError('field units differ; this tool does not silently rescale fields')
+            preflight = None
+            if args.preflight:
+                preflight = read_preflight(
+                    args.preflight,
+                    ref_units=(args.ref_coordinate_unit, args.ref_field_unit),
+                    computed_units=(args.computed_coordinate_unit, args.computed_field_unit),
+                    coordinate_scale=args.computed_coordinate_scale,
+                )
+            else:
+                validate_units(args.ref_coordinate_unit,args.computed_coordinate_unit,args.computed_coordinate_scale,kind='coordinate')
+                validate_units(args.ref_field_unit,args.computed_field_unit,None,kind='field')
             ref=load_csv(args.reference,args.coordinate,args.field,sort=args.sort)
             comp=load_csv(args.computed,args.computed_coordinate or args.coordinate,args.computed_field or args.field,sort=args.sort)
             if args.computed_coordinate_scale is not None:
                 comp=scaled(comp,args.computed_coordinate_scale)
-            result=audit(ref,comp,mode=args.mode,max_gap=args.max_gap,max_rmse=args.max_rmse)
-            result['coordinate_unit']=args.ref_coordinate_unit
-            result['field_unit']=args.ref_field_unit
-            result['coordinate_units_verified']=args.ref_coordinate_unit is not None
-            result['field_units_verified']=args.ref_field_unit is not None
-            if not result['coordinate_units_verified'] or not result['field_units_verified']:
-                result['warnings'].append('CSV units are not fully verified; provide explicit unit labels.')
+            if preflight and preflight['status'] != 'PASS':
+                result = {
+                    'verdict': 'FAIL_COMPARISON_METADATA' if preflight['status'] == 'FAIL' else 'NOT_EVALUABLE',
+                    'overlap_mae': None, 'overlap_rmse': None, 'full_domain_eligible': False,
+                    'reference_samples': len(ref.x), 'computed_samples': len(comp.x),
+                    'preflight': preflight,
+                }
+            else:
+                result=audit(ref,comp,mode=args.mode,max_gap=args.max_gap,max_rmse=args.max_rmse)
+                if preflight:
+                    result['preflight'] = preflight
+                    checks = preflight['checks']
+                    checks['sample_support'] = {
+                        'status': 'PASS' if result['full_domain_eligible'] else 'FAIL',
+                        'supported': result['supported_reference_samples'], 'total': len(ref.x),
+                    }
+                    nodes = set(comp.x)
+                    interior = sum(comp.x[0] < x < comp.x[-1] and x not in nodes for x in ref.x)
+                    covered = sum(comp.x[0] <= x <= comp.x[-1] for x in ref.x)
+                    gap_status = 'NOT_APPLICABLE'
+                    if interior:
+                        if args.max_gap is None:
+                            gap_status = 'UNKNOWN'
+                        else:
+                            gap_status = 'PASS' if covered == result['supported_reference_samples'] else 'FAIL'
+                    checks['interpolation_gap'] = {
+                        'status': gap_status, 'max_gap': args.max_gap, 'interior_reference_samples': interior,
+                    }
+                    if not result['full_domain_eligible']:
+                        preflight['status'] = 'FAIL'
+                    if gap_status == 'UNKNOWN':
+                        if preflight['status'] == 'PASS':
+                            preflight['status'] = 'UNKNOWN'
+                        if result['verdict'] not in ('FAIL_INCOMPLETE_SUPPORT', 'NOT_EVALUABLE'):
+                            result['verdict'] = 'NOT_EVALUABLE'
+                        result['overlap_mae'] = result['overlap_rmse'] = None
+                        result['full_domain_eligible'] = False
+                else:
+                    result['coordinate_unit']=args.ref_coordinate_unit
+                    result['field_unit']=args.ref_field_unit
+                    result['coordinate_units_verified']=args.ref_coordinate_unit is not None
+                    result['field_units_verified']=args.ref_field_unit is not None
+                    if not result['coordinate_units_verified'] or not result['field_units_verified']:
+                        result['warnings'].append('CSV units are not fully verified; provide explicit unit labels.')
+            if preflight:
+                preflight['checks']['csv_input'] = {'status': 'PASS'}
             data=json.dumps(result,indent=2,allow_nan=False)
             if args.output:Path(args.output).write_text(data+'\n',encoding='utf-8')
             if args.json:print(data)

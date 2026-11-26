@@ -68,4 +68,20 @@ The **separate Mach 2.5 axisymmetric 16° cone** compares SA with **SST-Vm**. `c
 
 The core interpolation distinction follows the official [NumPy `interp` documentation](https://numpy.org/doc/stable/reference/generated/numpy.interp.html) and [SciPy interpolation documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html): NumPy's default endpoint clamp is **documented behavior**, not a NumPy bug. Related works are [Oberkampf & Barone (2006), JCP](https://doi.org/10.1016/j.jcp.2006.03.037), [Wünsch et al. (2025), Statistics in Medicine](https://doi.org/10.1002/sim.70257) and [Geifman & El-Yaniv (2019), ICML](https://proceedings.mlr.press/v97/geifman19a.html). They address *different* comparison and coverage concepts; see [evidence boundaries](docs/research-foundations.md).
 
-Version: **0.1.0rc1** (release candidate; no PyPI publication). [MIT license](LICENSE) applies to this project's original assets; [third-party notices](THIRD_PARTY_NOTICES.md) apply to upstream data. Run tests with `python -m unittest discover -s tests -v` and see the [Windows/Linux CI workflow](.github/workflows/ci.yml). [GitHub Actions runs](https://github.com/hengyuhang61-creator/cfd-profile-audit/actions). [Contribute](CONTRIBUTING.md) by opening a reproducible [issue](https://github.com/hengyuhang61-creator/cfd-profile-audit/issues) or a focused PR.
+
+### Check profile identity before scoring
+
+Use one JSON file for both CSVs. Record the case, station and its datum, coordinate and direction, field, units, normalization, averaging and conditions. For a missing definition omit its key or use JSON `null`. Use identical labels for equivalent declarations and include reference values in normalization labels, for example `U / 532 m/s`. The [example](examples/preflight.json) describes the synthetic coverage demo.
+
+```sh
+cfd-profile-audit compare examples/reference.csv examples/reference.csv --preflight examples/preflight.json --max-rmse 0 --json
+cfd-profile-audit compare examples/reference.csv examples/computed.csv --preflight examples/preflight.json --json
+```
+
+The first command scores exact supported points. The second reports incomplete support. A declared mismatch exits 1 and suppresses the score. Missing identity or unspecified admissible spacing for interpolated points exits 2 and suppresses the score. Supply `--max-gap` in reference coordinate units when interpolation is needed. Exact sampling makes the interpolation gap check `NOT_APPLICABLE`. With `--mode overlap` and a supplied gap limit the discrepancy is conditional on supported points. Numeric scores use the existing CLI thresholds and support rules.
+
+CSV column flags select the actual columns. Unit labels may live in the JSON, or come from the existing `--ref-*` and `--computed-*` unit flags. When both are given they must agree. Different coordinate units require `--computed-coordinate-scale`. The preflight checks the factor for km, m, cm, mm and um. Convert other coordinate or field units before comparing and record the resulting definitions.
+
+Optional `reference_kind` is `experiment`, `analytic` or `simulation`. The optional `evidence` object accepts citations under `iteration`, `grid` and `experiment_uncertainty`. Adequacy remains `UNKNOWN` pending review of the sources. Experimental uncertainty is `NOT_APPLICABLE` for analytic and simulation references. The checks establish consistency of declarations and one-dimensional sampling. Physical equivalence, input accuracy, outlier interpretation and uncertainty budgets require domain evidence.
+
+Version: **0.1.0rc2** (release candidate; no PyPI publication). [MIT license](LICENSE) applies to this project's original assets; [third-party notices](THIRD_PARTY_NOTICES.md) apply to upstream data. Run tests with `python -m unittest discover -s tests -v` and see the [Windows/Linux CI workflow](.github/workflows/ci.yml). [GitHub Actions runs](https://github.com/hengyuhang61-creator/cfd-profile-audit/actions). [Contribute](CONTRIBUTING.md) by opening a reproducible [issue](https://github.com/hengyuhang61-creator/cfd-profile-audit/issues) or a focused PR.

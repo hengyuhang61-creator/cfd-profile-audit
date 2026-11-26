@@ -1,0 +1,25 @@
+{
+  "reference": {
+    "case": "Profile endpoint coverage demonstration",
+    "station": "Single synthetic profile",
+    "coordinate": "Synthetic sample coordinate increasing from zero",
+    "field": "Synthetic scalar",
+    "coordinate_unit": "1",
+    "field_unit": "1",
+    "normalization": "No normalization",
+    "averaging": "Point values",
+    "conditions": "Constructed plateau example"
+  },
+  "computed": {
+    "case": "Profile endpoint coverage demonstration",
+    "station": "Single synthetic profile",
+    "coordinate": "Synthetic sample coordinate increasing from zero",
+    "field": "Synthetic scalar",
+    "coordinate_unit": "1",
+    "field_unit": "1",
+    "normalization": "No normalization",
+    "averaging": "Point values",
+    "conditions": "Constructed plateau example"
+  },
+  "reference_kind": "analytic"
+}
